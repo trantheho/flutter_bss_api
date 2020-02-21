@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_bss_api/responses/user_response.dart';
 
@@ -9,7 +11,7 @@ class UserApiProvider {
     try{
       Response response = await _dio.get(_apiUrl);
       print(response.data);
-      return UserResponse.fromJson(response.data);
+      return UserResponse.fromJson(json.decode(response.data));
     }
     catch(error, stacktrace){
       print("Exception: $error stackTrace: $stacktrace");
