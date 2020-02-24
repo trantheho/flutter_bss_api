@@ -26,6 +26,7 @@ class _UserPageState extends State<UserPage> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
+      //đầu ra dữ liệu
       stream: bloc.subject.stream,
       builder: (context, AsyncSnapshot<UserResponse> snapshot) {
         if(snapshot.hasData){
