@@ -1,21 +1,28 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bss_api/bloc/user_bloc.dart';
+import 'package:flutter_bss_api/db/database.dart';
 import 'package:flutter_bss_api/models/result.dart';
 import 'package:flutter_bss_api/responses/user_response.dart';
 
 class UserPage extends StatefulWidget {
+
   @override
   _UserPageState createState() => _UserPageState();
 }
 
 class _UserPageState extends State<UserPage> {
   bool swipeLeft = false, swipeRight = false;
+  String content, label;
+  DatabaseHelper db;
 
   @override
   void initState() {
     super.initState();
     bloc.getUser();
+    db = DatabaseHelper();
   }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -83,18 +90,32 @@ class _UserPageState extends State<UserPage> {
 
   Widget _buildProfile(UserResponse data){
     Result result = data.results[0];
+    DragStartDetails startVerticalDragDetails;
+    DragUpdateDetails updateVerticalDragDetails;
+    content = "${result.user.location.street} ${result.user.location.city}";
+    label = "My address is";
+
     return Center(
       child: GestureDetector(
-        onPanUpdate: (detail){
-          if(detail.delta.dx > 0){
-            swipeLeft = true;
-            return;
+        onHorizontalDragStart: (drag){
+          startVerticalDragDetails = drag;
+        },
+        onHorizontalDragUpdate: (drag){
+          updateVerticalDragDetails = drag;
+        },
+        onHorizontalDragEnd: (endDrag){
+          double dx = updateVerticalDragDetails.globalPosition.dx - startVerticalDragDetails.globalPosition.dx;
+
+          if(dx > 0){
+            bloc.getUser();
           }
           else{
-            swipeRight = true;
-            return;
+            //saveUser(result.user);
+            //networkImageToUnit8List(result.user.picture);
+            db.saveUser(result.user);
           }
-        },
+          },
+
 
         child: Padding(
           padding: const EdgeInsets.all(8),
@@ -133,7 +154,7 @@ class _UserPageState extends State<UserPage> {
                       ),
                     ),
                     Text(
-                      'My address is',
+                      label,
                       style: TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                     SizedBox(height: 5,),
@@ -142,7 +163,7 @@ class _UserPageState extends State<UserPage> {
                       child: Container(
                         padding: EdgeInsets.all(8),
                         child: Text(
-                          '${result.user.location.street} ${result.user.location.city}',
+                          content,
                           style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
@@ -151,6 +172,7 @@ class _UserPageState extends State<UserPage> {
                     Flexible(
                       child: Container(
                         padding: EdgeInsets.only(bottom: 16),
+                        // default
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +188,12 @@ class _UserPageState extends State<UserPage> {
                                       width: 30,
                                       height: 30,
                                     ),
-                                    onTap: () {},
+                                    onTap: () {
+                                      setState(() {
+                                        label = "My name is";
+                                        content = "${result.user.name.title}.${result.user.name.first} ${result.user.name.last}";
+                                      });
+                                    },
                                   ),
                                 ],
                               ),
@@ -182,7 +209,12 @@ class _UserPageState extends State<UserPage> {
                                       width: 30,
                                       height: 30,
                                     ),
-                                    onTap: (){},
+                                    onTap: (){
+                                      setState(() {
+                                        label = "My address is";
+                                        content = "${result.user.location.street},${result.user.location.city},${result.user.location.state}";
+                                      });
+                                    },
                                   ),
                                 ],
                               ),
@@ -198,6 +230,12 @@ class _UserPageState extends State<UserPage> {
                                       width: 30,
                                       height: 30,
                                     ),
+                                    onTap: (){
+                                      setState(() {
+                                        label = "My address is";
+                                        content = "${result.user.location.street}, ${result.user.location.city}, ${result.user.location.state}";
+                                      });
+                                    },
                                   ),
                                 ],
                               ),
@@ -213,7 +251,12 @@ class _UserPageState extends State<UserPage> {
                                       width: 30,
                                       height: 30,
                                     ),
-                                    onTap: () {},
+                                    onTap: () {
+                                      setState(() {
+                                        label = "My phone is";
+                                        content = "${result.user.phone}";
+                                      });
+                                    },
                                   ),
                                 ],
                               ),
@@ -230,7 +273,10 @@ class _UserPageState extends State<UserPage> {
                                       height: 30,
                                     ),
                                     onTap: (){
-
+                                      setState(() {
+                                        label = "My password is";
+                                        content = "${result.user.password}";
+                                      });
                                     },
                                   ),
                                 ],
@@ -257,7 +303,7 @@ class _UserPageState extends State<UserPage> {
         alignment: Alignment.center,
         children: <Widget>[
           Container(
-            margin: EdgeInsets.only(bottom: 2),
+              margin: EdgeInsets.only(bottom: 2),
               child: Image(image: AssetImage('assets/icons/ic_up_arrow.png'), width: 10, height: 10,)),
           Container(
             width: 30,
@@ -268,5 +314,15 @@ class _UserPageState extends State<UserPage> {
       ),
     );
   }
+
+  void iconClick(int number, Result result){
+    switch(number){
+      case 1:
+        content = "${result.user.name.title}.${result.user.name.first} ${result.user.name.last}";
+
+    }
+
+  }
+
 
 }
