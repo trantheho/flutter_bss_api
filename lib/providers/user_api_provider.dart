@@ -7,11 +7,18 @@ class UserApiProvider {
   final String localApi = "assets/user.json";
   final Dio _dio = new Dio();
 
+  //Future như rxjava.
   Future<UserResponse> getUser() async {
     try{
+      //await==> Để lấy dữ liệu từ API, luon nam trong async
       Response response = await _dio.get(_apiUrl);
+<<<<<<< HEAD
       print("response: ${response.toString()}");
       return UserResponse.fromJson(json.decode(response.toString()));
+=======
+      //async==> đồng bộ data sau khi api trả về response
+      return UserResponse.fromJson(json.decode(response.data));
+>>>>>>> master
     }
     catch(error, stacktrace){
       print("Exception: $error stackTrace: $stacktrace");

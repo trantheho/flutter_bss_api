@@ -106,6 +106,7 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     return Stack(
       children: <Widget>[
         Positioned(
@@ -122,6 +123,26 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin{
           ),
         ),
       ],
+=======
+    return StreamBuilder(
+      //đầu ra dữ liệu
+      stream: bloc.subject.stream,
+      builder: (context, AsyncSnapshot<UserResponse> snapshot) {
+        if(snapshot.hasData){
+          print(snapshot.data);
+          if(snapshot.data.error != null && snapshot.data.error.length > 0){
+            print("${snapshot.data.error}");
+            return _buildError(snapshot.data.error);
+          }
+          return _buildProfile(snapshot.data);
+        }
+        else if(snapshot.hasError){
+          return _buildError(snapshot.data.error);
+        }else{
+          return _buildLoading();
+        }
+      },
+>>>>>>> master
     );
   }
 
