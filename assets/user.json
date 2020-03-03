@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "user": {
+        "gender": "male",
+        "name": {"title": "le", "first": "tran", "last": "hoang"},
+        "location": {"street": "123 le thanh ton", "city": "ho chi minh", "state": "viet nam"},
+        "email": "haonganh@gmail.com",
+        "username": "lehoanganh",
+        "password": "123456",
+        "phone": "(031)-745-562",
+        "cell": "(035)-784-123",
+        "picture": "https://zingtv-photo-td.zadn.vn/tv_media_854_480/b/a/0/8/ba08de6f9f6f765d8dec12f7621fcdc4.jpg"
+      }
+    }
+  ]
+}

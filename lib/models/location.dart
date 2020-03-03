@@ -1,12 +1,14 @@
+import 'package:flutter_bss_api/models/street.dart';
+
 class Location{
-  String street;
+  Street street;
   String city;
   String state;
 
   Location ({this.street, this.city, this.state});
 
   Location.fromJson(Map<String, dynamic> parsedJson)
-      : street = parsedJson["street"],
+      : street = Street.fromJson(parsedJson["street"]),
         city = parsedJson["city"],
         state = parsedJson["state"];
 

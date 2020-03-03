@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:io' as io;
 import 'package:flutter_bss_api/models/location.dart';
+import 'package:flutter_bss_api/models/login.dart';
 import 'package:flutter_bss_api/models/name.dart';
+import 'package:flutter_bss_api/models/picture.dart';
+import 'package:flutter_bss_api/models/street.dart';
 import 'package:flutter_bss_api/models/user.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:path/path.dart';
@@ -63,7 +66,7 @@ class DatabaseHelper{
 
   Future<int> saveUser(User user) async{
     var dbClient = await db;
-    var imagePath = await DefaultCacheManager().getSingleFile(user.picture);
+    var imagePath = await DefaultCacheManager().getSingleFile(user.picture.large);
     var result = await dbClient.insert(TABLE, user.toMap(imagePath.path),);
     return result;
   }
@@ -75,17 +78,19 @@ class DatabaseHelper{
 
     for(int i=0; i<value.length; i++){
       var name = Name(title: value[i]["title"], first: value[i]["first"], last: value[i]["last"]);
-      var location = Location(street: value[i]["street"], city: value[i]["city"], state: value[i]["state"]);
+      var street = Street(name: value[i]["street"]);
+      var location = Location(street: street, city: value[i]["city"], state: value[i]["state"]);
+      var login = Login(username: value[i]["username"], password: value[i]["password"]);
+      var picture = Picture(large: value[i]["picture"], medium: "", thumbnail: "");
 
       var user = User(gender: value[i]["gender"],
           name: name,
           location: location,
           email: value[i]["email"],
-          username: value[i]["username"],
-          password: value[i]["password"],
+          login: login,
           phone: value[i]["phone"],
           cell: value[i]["cell"],
-          picture: value[i]["picture"]);
+          picture: picture);
 
       list.add(user);
     }

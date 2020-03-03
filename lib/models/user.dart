@@ -1,31 +1,29 @@
-import 'dart:convert';
 import 'package:flutter_bss_api/models/location.dart';
+import 'package:flutter_bss_api/models/login.dart';
 import 'package:flutter_bss_api/models/name.dart';
+import 'package:flutter_bss_api/models/picture.dart';
 
 class User {
   String gender;
   Name name;
   Location location;
   String email;
-  String username;
-  String password;
+  Login login;
   String phone;
   String cell;
-  String picture;
+  Picture picture;
 
-  User ({this.gender, this.name, this.location, this.email, this.username,
-      this.password, this.phone, this.cell, this.picture});
+  User ({this.gender, this.name, this.location, this.email, this.login, this.phone, this.cell, this.picture});
 
   User.fromJson(Map<String, dynamic> parsedJson)
       : gender = parsedJson["gender"],
         name = Name.fromJson(parsedJson["name"]),
         location = Location.fromJson(parsedJson["location"]),
         email = parsedJson["email"],
-        username = parsedJson["username"],
-        password = parsedJson["password"],
+        login = Login.fromJson(parsedJson["login"]),
         phone = parsedJson["phone"],
         cell = parsedJson["cell"],
-        picture = parsedJson["picture"];
+        picture = Picture.fromJson(parsedJson["picture"]);
 
 
   Map<String, dynamic> toMap(String path) => {
@@ -33,12 +31,12 @@ class User {
     "title": name.title,
     "first": name.first,
     "last": name.last,
-    "street": location.street,
+    "street": location.street.toString(),
     "city": location.city,
     "state": location.state,
     "email": email,
-    "username": username,
-    "password": password,
+    "username": login.username,
+    "password": login.password,
     "phone": phone,
     "cell": cell,
     "picture": path,

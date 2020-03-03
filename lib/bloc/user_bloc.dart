@@ -6,13 +6,18 @@ import 'package:rxdart/rxdart.dart';
 
 class UserBloc {
   final UserApiProvider _userApiProvider = UserApiProvider();
-  final BehaviorSubject<UserResponse> _subject = BehaviorSubject<UserResponse> ();
+  final BehaviorSubject<List<User>> _subject = BehaviorSubject<List<User>> ();
   final ReplaySubject<List<User>> _userSubject = ReplaySubject<List<User>> ();
   final DatabaseHelper db = DatabaseHelper();
 
   getUser() async{
     UserResponse response = await _userApiProvider.getUser();
-    _subject.sink.add(response);
+    _subject.sink.add(response.results);
+  }
+
+  Future<UserResponse> initUser() async {
+    UserResponse response = await _userApiProvider.getUser();
+    return response;
   }
 
   getLocalUser() async{
@@ -25,7 +30,7 @@ class UserBloc {
     _userSubject.close();
   }
 
-  BehaviorSubject<UserResponse> get subject => _subject;
+  BehaviorSubject<List<User>> get subject => _subject;
   ReplaySubject<List<User>> get userSubject => _userSubject;
 
 }

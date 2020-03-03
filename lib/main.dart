@@ -1,30 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bss_api/bloc/overlay_bloc.dart';
+import 'package:flutter_bss_api/bloc/user_bloc.dart';
+import 'package:flutter_bss_api/db/default_data.dart';
+import 'package:flutter_bss_api/models/user.dart';
+import 'package:flutter_bss_api/pages/cards.dart';
 import 'package:flutter_bss_api/pages/favorite_page.dart';
-import 'package:flutter_bss_api/pages/user_page.dart';
+import 'package:flutter_bss_api/pages/user_screen.dart';
+import 'package:flutter_bss_api/utils/cards_demo.dart';
+import 'package:flutter_bss_api/utils/matches.dart';
 
-Future<void> main() async{
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
   runApp(MyApp());
 }
 
+final MatchEngine matchEngine = new MatchEngine(
+    matches: user_data.map((User user) {
+      return Match(user: user);
+    }).toList());
+
 class MyApp extends StatelessWidget {
-
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
+        primaryColorBrightness: Brightness.light,
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Api'),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-
   MyHomePage({Key key, this.title}) : super(key: key);
 
   final String title;
@@ -34,208 +43,196 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Match match = new Match();
+  //MatchEngine matchEngine;
+  List<User> list;
+
+
+  @override
+  void initState () {
+    bloc.getUser();
+    list = [];
+    overlayBloc.inputValue.add(true);
+  }
+
+  Widget _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0.0,
+      title: Text(
+        'Demo API Flutter'
+      ),
+      actions: <Widget>[
+        new IconButton(
+          icon: new Icon(
+            Icons.favorite,
+            color: Colors.redAccent,
+            size: 40.0,
+          ),
+          onPressed: () {
+            setState(() {
+              // using stream to handle overlay value
+              overlayBloc.inputValue.add(false);
+            });
+            Navigator.push(context, MaterialPageRoute(builder: (context) => Favorite()));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return BottomAppBar(
+        color: Colors.transparent,
+        elevation: 0.0,
+        child: new Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: new Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              /*new RoundIconButton.small(
+                icon: Icons.refresh,
+                iconColor: Colors.orange,
+                onPressed: () {},
+              ),*/
+              new RoundIconButton.large(
+                icon: Icons.favorite,
+                iconColor: Colors.green,
+                onPressed: () {
+                  matchEngine.currentMatch.like();
+                },
+              ),
+              new RoundIconButton.small(
+                icon: Icons.arrow_upward,
+                iconColor: Colors.blue,
+                onPressed: () {
+                  matchEngine.currentMatch.superLike();
+                },
+              ),
+              new RoundIconButton.large(
+                icon: Icons.clear,
+                iconColor: Colors.red,
+                onPressed: () {
+                  matchEngine.currentMatch.nope();
+                },
+              ),
+
+
+             /* new RoundIconButton.small(
+                icon: Icons.lock,
+                iconColor: Colors.purple,
+                onPressed: () {},
+              ),*/
+            ],
+          ),
+        ));
+  }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.favorite),
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Favorite()),
-              );
-            },
-          )
-        ],
+      appBar: _buildAppBar(),
+      body:new CardStackUser(
+        matchEngine: matchEngine,
       ),
-      body: Column(
+      /*StreamBuilder(
+        stream: bloc.subject.stream,
+        // ignore: missing_return
+        builder: (context, AsyncSnapshot<List<User>> snapshot){
+          if(snapshot.hasData){
+            for(int i=0; i<snapshot.data.length; i++){
+              var user = snapshot.data[i];
+              list.add(user);
+
+              print("User value: ${user.toString()}");
+            }
+
+
+            matchEngine = new MatchEngine(
+                matches: user_data.map((User user) {
+                  return Match(user: user);
+                }).toList());
+
+            // ignore: missing_return
+            return new CardStack(
+              matchEngine: matchEngine,
+            );
+          }
+          else{
+            return _buildLoading();
+          }
+        },
+      ),*/
+      bottomNavigationBar: _buildBottomBar(),
+    );
+  }
+
+  Widget _buildLoading() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Expanded(
-            flex: 4,
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              padding: const EdgeInsets.all(8) ,
-              decoration: BoxDecoration(
-                gradient: new LinearGradient(
-                    colors: [
-                      Color(0xff1976D2),
-                      Color(0xff448AFF),
-                    ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-
-              child: Stack(
-                children: <Widget>[
-                  _buildProfileCard(),
-                  UserPage(),
-                ],
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileCard(){
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: <Widget>[
-            Container(
-              width: double.infinity,
-              height: 350,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.white,
-              ),
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    width: double.infinity,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.grey[200]
-                    ),
-                  ),
-                  Container(
-                    height: 2,
-                    width: double.infinity,
-                    color: Colors.grey,
-                  )
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfile(){
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: <Widget>[
-            Container(
+          Container(
               width: double.infinity,
               height: 400,
               child: Column(
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Container(
-                      width: 160,
-                      height: 160,
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(width: 2, color: Colors.grey),
-                          color: Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Container(
-                          width: 160,
-                          height: 160,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              image: DecorationImage(
-                                  fit: BoxFit.fill,
-                                  image: NetworkImage("http://api.randomuser.me/portraits/women/87.jpg")
-                              )
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    'My address is',
-                    style: TextStyle(fontSize: 20, color: Colors.grey),
-                  ),
-                  SizedBox(height: 15,),
-                  Text(
-                    '4661 Aubuun Ave',
-                    style: TextStyle(fontSize: 26, color: Colors.black, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20,),
-                  Flexible(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: InkWell(
-                            child: Image(
-                              image: AssetImage('assets/icons/ic_user_default.png'),
-                              width: 40,
-                              height: 40,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: InkWell(
-                            child: Image(
-                              image: AssetImage('assets/icons/ic_schedule_default.png'),
-                              width: 40,
-                              height: 40,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: InkWell(
-                            child: Image(
-                              image: AssetImage('assets/icons/ic_map_selected.png'),
-                              width: 40,
-                              height: 40,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: InkWell(
-                            child: Image(
-                              image: AssetImage('assets/icons/ic_phone_default.png'),
-                              width: 40,
-                              height: 40,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: InkWell(
-                            child: Image(
-                              image: AssetImage('assets/icons/ic_privacy_default.png'),
-                              width: 40,
-                              height: 40,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-
+                  Text('Please wait to loading data...'),
+                  CircularProgressIndicator(),
                 ],
-              ),
-            )
-          ],
-        ),
+              )
+          ),
+        ],
       ),
     );
   }
+}
 
+class RoundIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final double size;
+  final VoidCallback onPressed;
 
+  RoundIconButton.large({
+    this.icon,
+    this.iconColor,
+    this.onPressed,
+  }) : size = 60.0;
+
+  RoundIconButton.small({
+    this.icon,
+    this.iconColor,
+    this.onPressed,
+  }) : size = 50.0;
+
+  RoundIconButton({
+    this.icon,
+    this.iconColor,
+    this.size,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: new BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white,
+          boxShadow: [
+            new BoxShadow(color: const Color(0x11000000), blurRadius: 10.0),
+          ]),
+      child: new RawMaterialButton(
+        shape: new CircleBorder(),
+        elevation: 0.0,
+        child: new Icon(
+          icon,
+          color: iconColor,
+        ),
+        onPressed: onPressed,
+      ),
+    );
+  }
 }
