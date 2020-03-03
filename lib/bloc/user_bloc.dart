@@ -6,9 +6,8 @@ import 'package:rxdart/rxdart.dart';
 
 class UserBloc {
   final UserApiProvider _userApiProvider = UserApiProvider();
-<<<<<<< HEAD
   final BehaviorSubject<List<User>> _subject = BehaviorSubject<List<User>> ();
-=======
+  List<User> list = List();
 
   /**
    *StreamController là StreamSink để quản lí luồng như Rxdart.
@@ -17,24 +16,21 @@ class UserBloc {
    * Trong RxDart gồm: BehaviorSubject, ReplaySubject, PublishSubject
    * BehaviorSubject: nhận giá trị respone
    */
-  final BehaviorSubject<UserResponse> _subject = BehaviorSubject<UserResponse> ();
->>>>>>> master
+  //final BehaviorSubject<UserResponse> _subject = BehaviorSubject<UserResponse> ();
   final ReplaySubject<List<User>> _userSubject = ReplaySubject<List<User>> ();
   final DatabaseHelper db = DatabaseHelper();
 
   getUser() async{
-    UserResponse response = await _userApiProvider.getUser();
-<<<<<<< HEAD
-    _subject.sink.add(response.results);
+    for(int i= 1 ; i<3; i++){
+      UserResponse response = await _userApiProvider.getUser();
+      list.add(response.results[0]);
+    }
+    _subject.sink.add(list);
   }
 
   Future<UserResponse> initUser() async {
     UserResponse response = await _userApiProvider.getUser();
     return response;
-=======
-    //đầu vào của data
-    _subject.sink.add(response);
->>>>>>> master
   }
 
   getLocalUser() async{

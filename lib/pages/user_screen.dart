@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bss_api/bloc/overlay_bloc.dart';
+import 'package:flutter_bss_api/bloc/user_bloc.dart';
 import 'package:flutter_bss_api/models/user.dart';
 import 'package:flutter_bss_api/utils/matches.dart';
 import 'package:fluttery_dart2/layout.dart';
@@ -119,17 +120,17 @@ class _CardStackUserState extends State<CardStackUser> {
   }
 
   void _onSlideComplete(SlideDirection direction) {
-    Match currenMatch = widget.matchEngine.currentMatch;
+    Match currentMatch = widget.matchEngine.currentMatch;
 
     switch (direction) {
       case SlideDirection.left:
-        currenMatch.like();
+        currentMatch.like();
         break;
       case SlideDirection.right:
-        currenMatch.nope();
+        currentMatch.nope();
         break;
       case SlideDirection.up:
-        currenMatch.superLike();
+        currentMatch.superLike();
         break;
     }
 
@@ -329,6 +330,7 @@ class _DraggableCardState extends State<DraggableCard> with TickerProviderStateM
   void _onPanStart(DragStartDetails details) {
     dragStart = details.globalPosition;
 
+
     if (slideBackAnimation.isAnimating) {
       slideBackAnimation.stop(canceled: true);
     }
@@ -446,8 +448,18 @@ class _ProfileCardState extends State<ProfileCard> {
   bool first = true;
 
 
+  @override
+  void initState() {
+    label = "My address is";
+  }
+
   Widget _buildProfile(){
-    return Padding(
+    return new StreamBuilder(
+      stream: bloc.subject.stream,
+      builder: (context, AsyncSnapshot<List<User>> snapshot){
+        if(snapshot.hasData){
+          print('url image: ${snapshot.data[0].picture.large}');
+          return new Padding(
             padding: const EdgeInsets.all(4),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -476,7 +488,7 @@ class _ProfileCardState extends State<ProfileCard> {
                                   color: Colors.white,
                                   image: DecorationImage(
                                       fit: BoxFit.cover,
-                                      image: NetworkImage(widget.profile.picture.large)
+                                      image: NetworkImage(snapshot.data[0].picture.large),
                                   )
                               ),
                             ),
@@ -493,7 +505,7 @@ class _ProfileCardState extends State<ProfileCard> {
                         child: Container(
                           padding: EdgeInsets.all(8),
                           child: Text(
-                            checkFirst(first, widget.profile),
+                            checkFirst(first, snapshot.data[0]),
                             style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
@@ -516,9 +528,9 @@ class _ProfileCardState extends State<ProfileCard> {
                                       onPressed:() {
                                         setState(() {
                                           label = 'My name is';
-                                          _content = '${widget.profile.name.title}.${widget.profile.name.first} ${widget.profile.name.last}';
+                                          _content = '${snapshot.data[0].name.title}.${snapshot.data[0].name.first} ${snapshot.data[0].name.last}';
                                           first = false;
-                                          checkFirst(first, widget.profile);
+                                          checkFirst(first, snapshot.data[0]);
                                           //_content = setupContent(result, 0);
                                         });
                                       },
@@ -533,7 +545,7 @@ class _ProfileCardState extends State<ProfileCard> {
                                       onPressed: () {
                                         setState(() {
                                           label = 'My schedule is';
-                                          _content = '${widget.profile.location.street.number} ${widget.profile.location.street.name},${widget.profile.location.city},${widget.profile.location.state}';
+                                          _content = '${snapshot.data[0].location.street.number} ${snapshot.data[0].location.street.name},${snapshot.data[0].location.city},${snapshot.data[0].location.state}';
                                           //setupContent(result, 1);
                                         });
                                       },
@@ -548,7 +560,7 @@ class _ProfileCardState extends State<ProfileCard> {
                                       onPressed: (){
                                         setState(() {
                                           label = 'My address is';
-                                          _content = '${widget.profile.location.street.number} ${widget.profile.location.street.name},${widget.profile.location.city},${widget.profile.location.state}';
+                                          _content = '${snapshot.data[0].location.street.number} ${snapshot.data[0].location.street.name},${snapshot.data[0].location.city},${snapshot.data[0].location.state}';
                                           //setupContent(result, 2);
                                         });
                                       },
@@ -563,7 +575,7 @@ class _ProfileCardState extends State<ProfileCard> {
                                       onPressed: (){
                                         setState(() {
                                           label = 'My phone is';
-                                          _content = '${widget.profile.phone}';
+                                          _content = '${snapshot.data[0].phone}';
                                           //setupContent(result, 3);
                                         });
                                       },
@@ -578,7 +590,7 @@ class _ProfileCardState extends State<ProfileCard> {
                                       onPressed: (){
                                         setState(() {
                                           label = 'My password is';
-                                          _content = '${widget.profile.login.password}';
+                                          _content = '${snapshot.data[0].login.password}';
                                           //setupContent(result, 4);
                                         });
                                       },
@@ -597,6 +609,162 @@ class _ProfileCardState extends State<ProfileCard> {
               ],
             ),
           );
+        }
+        else{
+          return Container(width: 0, height: 0,);
+        }
+      },
+      /*child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    height: 370,
+                    child: Column(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Container(
+                            width: 160,
+                            height: 160,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(width: 2, color: Colors.grey),
+                              color: Colors.white,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Container(
+                                width: 160,
+                                height: 160,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: NetworkImage(widget.profile.picture.large)
+                                    )
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '$label',
+                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                        ),
+                        SizedBox(height: 5,),
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            padding: EdgeInsets.all(8),
+                            child: Text(
+                              checkFirst(first, widget.profile),
+                              style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        Column(
+                          children: <Widget>[
+                            _buildTopIndicator(),
+                            Container(
+                              margin: EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Column(
+                                    children: <Widget>[
+                                      //_buildTopIndicator(false),
+                                      IconButton(
+                                        icon: Image(image: AssetImage('assets/icons/ic_user_default.png'),),
+                                        onPressed:() {
+                                          setState(() {
+                                            label = 'My name is';
+                                            _content = '${widget.profile.name.title}.${widget.profile.name.first} ${widget.profile.name.last}';
+                                            first = false;
+                                            checkFirst(first, widget.profile);
+                                            //_content = setupContent(result, 0);
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: <Widget>[
+                                      //_buildTopIndicator(false),
+                                      IconButton(
+                                        icon: Image(image: AssetImage('assets/icons/ic_schedule_default.png'),),
+                                        onPressed: () {
+                                          setState(() {
+                                            label = 'My schedule is';
+                                            _content = '${widget.profile.location.street.number} ${widget.profile.location.street.name},${widget.profile.location.city},${widget.profile.location.state}';
+                                            //setupContent(result, 1);
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: <Widget>[
+                                      //_buildTopIndicator(true),
+                                      IconButton(
+                                        icon: Image(image: AssetImage('assets/icons/ic_map_selected.png'),),
+                                        onPressed: (){
+                                          setState(() {
+                                            label = 'My address is';
+                                            _content = '${widget.profile.location.street.number} ${widget.profile.location.street.name},${widget.profile.location.city},${widget.profile.location.state}';
+                                            //setupContent(result, 2);
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: <Widget>[
+                                      //_buildTopIndicator(false),
+                                      IconButton(
+                                        icon: Image(image: AssetImage('assets/icons/ic_phone_default.png'),),
+                                        onPressed: (){
+                                          setState(() {
+                                            label = 'My phone is';
+                                            _content = '${widget.profile.phone}';
+                                            //setupContent(result, 3);
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: <Widget>[
+                                      //_buildTopIndicator(false),
+                                      IconButton(
+                                        icon: Image(image: AssetImage('assets/icons/ic_privacy_default.png'),),
+                                        onPressed: (){
+                                          setState(() {
+                                            label = 'My password is';
+                                            _content = '${widget.profile.login.password}';
+                                            //setupContent(result, 4);
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),*/
+    );
   }
 
   Widget _buildTopIndicator(){
@@ -727,7 +895,7 @@ class _ProfileCardState extends State<ProfileCard> {
             children: <Widget>[
               //_buildBackground(),
               _buildProfileCard(),
-              _buildProfile(),
+              //_buildProfile(),
             ],
           ),
         ),
