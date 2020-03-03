@@ -127,7 +127,7 @@ class _CardStackState extends State<CardStack> {
     switch (direction) {
       case SlideDirection.left:
         currentMatch.like();
-                print("swipe to left");
+        print("swipe to left");
         setState(() {
           print("save user into local database");
           db.saveUser(currentMatch.user);

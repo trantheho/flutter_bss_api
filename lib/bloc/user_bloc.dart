@@ -25,6 +25,20 @@ class UserBloc {
       UserResponse response = await _userApiProvider.getUser();
       list.add(response.results[0]);
     }
+    return list;
+  }
+
+  updateUser() async{
+    if(list.isEmpty){
+      list = getUser();
+    }
+    else{
+      list.removeAt(0);
+      UserResponse response = await _userApiProvider.getUser();
+      list.add(response.results[0]);
+    }
+
+    print("List user: $list");
     _subject.sink.add(list);
   }
 

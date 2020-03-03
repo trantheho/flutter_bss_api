@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bss_api/bloc/overlay_bloc.dart';
 import 'package:flutter_bss_api/bloc/user_bloc.dart';
+import 'package:flutter_bss_api/db/database.dart';
 import 'package:flutter_bss_api/models/user.dart';
 import 'package:flutter_bss_api/utils/matches.dart';
 import 'package:fluttery_dart2/layout.dart';
@@ -20,10 +21,12 @@ class _CardStackUserState extends State<CardStackUser> {
   Key _frontCard;
   Match _currentMatch;
   double _nextCardScale = 0.0;
+  DatabaseHelper db;
 
   @override
   void initState() {
     super.initState();
+    db = DatabaseHelper();
     widget.matchEngine.addListener(_onMatchEngineChange);
 
     _currentMatch = widget.matchEngine.currentMatch;
@@ -85,7 +88,7 @@ class _CardStackUserState extends State<CardStackUser> {
       transform: Matrix4.identity()..scale(_nextCardScale, _nextCardScale),
       alignment: Alignment.center,
       child: ProfileCard(
-        profile: widget.matchEngine.nextMatch.user,
+        user: widget.matchEngine.nextMatch.user,
       ),
     );
   }
@@ -93,7 +96,7 @@ class _CardStackUserState extends State<CardStackUser> {
   Widget _buildFrontCard() {
     return ProfileCard(
       key: _frontCard,
-      profile: widget.matchEngine.currentMatch.user,
+      user: widget.matchEngine.currentMatch.user,
     );
   }
 
@@ -125,9 +128,17 @@ class _CardStackUserState extends State<CardStackUser> {
     switch (direction) {
       case SlideDirection.left:
         currentMatch.like();
+        setState(() {
+          print("save user into local database");
+          db.saveUser(currentMatch.user);
+          bloc.updateUser();
+        });
         break;
       case SlideDirection.right:
         currentMatch.nope();
+        setState(() {
+          bloc.updateUser();
+        });
         break;
       case SlideDirection.up:
         currentMatch.superLike();
@@ -434,9 +445,9 @@ class _DraggableCardState extends State<DraggableCard> with TickerProviderStateM
 }
 
 class ProfileCard extends StatefulWidget {
-  final User profile;
+  final User user;
 
-  ProfileCard({Key key, this.profile}) : super(key: key);
+  ProfileCard({Key key, this.user}) : super(key: key);
 
   @override
   _ProfileCardState createState() => _ProfileCardState();
@@ -454,316 +465,155 @@ class _ProfileCardState extends State<ProfileCard> {
   }
 
   Widget _buildProfile(){
-    return new StreamBuilder(
-      stream: bloc.subject.stream,
-      builder: (context, AsyncSnapshot<List<User>> snapshot){
-        if(snapshot.hasData){
-          print('url image: ${snapshot.data[0].picture.large}');
-          return new Padding(
-            padding: const EdgeInsets.all(4),
+    return Padding(
+      padding: const EdgeInsets.all(4),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            height: 370,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Container(
-                  height: 370,
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Container(
-                          width: 160,
-                          height: 160,
-                          decoration: BoxDecoration(
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Container(
+                    width: 160,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(width: 2, color: Colors.grey),
+                      color: Colors.white,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2),
+                      child: Container(
+                        width: 160,
+                        height: 160,
+                        decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(width: 2, color: Colors.grey),
                             color: Colors.white,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: Container(
-                              width: 160,
-                              height: 160,
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
-                                  image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: NetworkImage(snapshot.data[0].picture.large),
-                                  )
-                              ),
-                            ),
-                          ),
+                            image: DecorationImage(
+                              fit: BoxFit.cover,
+                              image: NetworkImage(widget.user.picture.large),
+                            )
                         ),
                       ),
-                      Text(
-                        '$label',
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
-                      ),
-                      SizedBox(height: 5,),
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: EdgeInsets.all(8),
-                          child: Text(
-                            checkFirst(first, snapshot.data[0]),
-                            style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                      Column(
+                    ),
+                  ),
+                ),
+                Text(
+                  '$label',
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+                SizedBox(height: 5,),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    padding: EdgeInsets.all(8),
+                    child: Text(
+                      checkFirst(first, widget.user),
+                      style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                Column(
+                  children: <Widget>[
+                    _buildTopIndicator(),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          _buildTopIndicator(),
-                          Container(
-                            margin: EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Column(
-                                  children: <Widget>[
-                                    //_buildTopIndicator(false),
-                                    IconButton(
-                                      icon: Image(image: AssetImage('assets/icons/ic_user_default.png'),),
-                                      onPressed:() {
-                                        setState(() {
-                                          label = 'My name is';
-                                          _content = '${snapshot.data[0].name.title}.${snapshot.data[0].name.first} ${snapshot.data[0].name.last}';
-                                          first = false;
-                                          checkFirst(first, snapshot.data[0]);
-                                          //_content = setupContent(result, 0);
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: <Widget>[
-                                    //_buildTopIndicator(false),
-                                    IconButton(
-                                      icon: Image(image: AssetImage('assets/icons/ic_schedule_default.png'),),
-                                      onPressed: () {
-                                        setState(() {
-                                          label = 'My schedule is';
-                                          _content = '${snapshot.data[0].location.street.number} ${snapshot.data[0].location.street.name},${snapshot.data[0].location.city},${snapshot.data[0].location.state}';
-                                          //setupContent(result, 1);
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: <Widget>[
-                                    //_buildTopIndicator(true),
-                                    IconButton(
-                                      icon: Image(image: AssetImage('assets/icons/ic_map_selected.png'),),
-                                      onPressed: (){
-                                        setState(() {
-                                          label = 'My address is';
-                                          _content = '${snapshot.data[0].location.street.number} ${snapshot.data[0].location.street.name},${snapshot.data[0].location.city},${snapshot.data[0].location.state}';
-                                          //setupContent(result, 2);
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: <Widget>[
-                                    //_buildTopIndicator(false),
-                                    IconButton(
-                                      icon: Image(image: AssetImage('assets/icons/ic_phone_default.png'),),
-                                      onPressed: (){
-                                        setState(() {
-                                          label = 'My phone is';
-                                          _content = '${snapshot.data[0].phone}';
-                                          //setupContent(result, 3);
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: <Widget>[
-                                    //_buildTopIndicator(false),
-                                    IconButton(
-                                      icon: Image(image: AssetImage('assets/icons/ic_privacy_default.png'),),
-                                      onPressed: (){
-                                        setState(() {
-                                          label = 'My password is';
-                                          _content = '${snapshot.data[0].login.password}';
-                                          //setupContent(result, 4);
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                          Column(
+                            children: <Widget>[
+                              //_buildTopIndicator(false),
+                              IconButton(
+                                icon: Image(image: AssetImage('assets/icons/ic_user_default.png'),),
+                                onPressed:() {
+                                  setState(() {
+                                    label = 'My name is';
+                                    _content = '${widget.user.name.title}.${widget.user.name.first} ${widget.user.name.last}';
+                                    first = false;
+                                    checkFirst(first, widget.user);
+                                    //_content = setupContent(result, 0);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: <Widget>[
+                              //_buildTopIndicator(false),
+                              IconButton(
+                                icon: Image(image: AssetImage('assets/icons/ic_schedule_default.png'),),
+                                onPressed: () {
+                                  setState(() {
+                                    label = 'My schedule is';
+                                    _content = '${widget.user.location.street.number} ${widget.user.location.street.name},${widget.user.location.city},${widget.user.location.state}';
+                                    //setupContent(result, 1);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: <Widget>[
+                              //_buildTopIndicator(true),
+                              IconButton(
+                                icon: Image(image: AssetImage('assets/icons/ic_map_selected.png'),),
+                                onPressed: (){
+                                  setState(() {
+                                    label = 'My address is';
+                                    _content = '${widget.user.location.street.number} ${widget.user.location.street.name},${widget.user.location.city},${widget.user.location.state}';
+                                    //setupContent(result, 2);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: <Widget>[
+                              //_buildTopIndicator(false),
+                              IconButton(
+                                icon: Image(image: AssetImage('assets/icons/ic_phone_default.png'),),
+                                onPressed: (){
+                                  setState(() {
+                                    label = 'My phone is';
+                                    _content = '${widget.user.phone}';
+                                    //setupContent(result, 3);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: <Widget>[
+                              //_buildTopIndicator(false),
+                              IconButton(
+                                icon: Image(image: AssetImage('assets/icons/ic_privacy_default.png'),),
+                                onPressed: (){
+                                  setState(() {
+                                    label = 'My password is';
+                                    _content = '${widget.user.login.password}';
+                                    //setupContent(result, 4);
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ],
-                      )
-
-                    ],
-                  ),
+                      ),
+                    ),
+                  ],
                 )
+
               ],
             ),
-          );
-        }
-        else{
-          return Container(width: 0, height: 0,);
-        }
-      },
-      /*child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    height: 370,
-                    child: Column(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Container(
-                            width: 160,
-                            height: 160,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(width: 2, color: Colors.grey),
-                              color: Colors.white,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(2),
-                              child: Container(
-                                width: 160,
-                                height: 160,
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: NetworkImage(widget.profile.picture.large)
-                                    )
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          '$label',
-                          style: TextStyle(fontSize: 18, color: Colors.grey),
-                        ),
-                        SizedBox(height: 5,),
-                        Expanded(
-                          flex: 1,
-                          child: Container(
-                            padding: EdgeInsets.all(8),
-                            child: Text(
-                              checkFirst(first, widget.profile),
-                              style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                        Column(
-                          children: <Widget>[
-                            _buildTopIndicator(),
-                            Container(
-                              margin: EdgeInsets.only(bottom: 8),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Column(
-                                    children: <Widget>[
-                                      //_buildTopIndicator(false),
-                                      IconButton(
-                                        icon: Image(image: AssetImage('assets/icons/ic_user_default.png'),),
-                                        onPressed:() {
-                                          setState(() {
-                                            label = 'My name is';
-                                            _content = '${widget.profile.name.title}.${widget.profile.name.first} ${widget.profile.name.last}';
-                                            first = false;
-                                            checkFirst(first, widget.profile);
-                                            //_content = setupContent(result, 0);
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: <Widget>[
-                                      //_buildTopIndicator(false),
-                                      IconButton(
-                                        icon: Image(image: AssetImage('assets/icons/ic_schedule_default.png'),),
-                                        onPressed: () {
-                                          setState(() {
-                                            label = 'My schedule is';
-                                            _content = '${widget.profile.location.street.number} ${widget.profile.location.street.name},${widget.profile.location.city},${widget.profile.location.state}';
-                                            //setupContent(result, 1);
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: <Widget>[
-                                      //_buildTopIndicator(true),
-                                      IconButton(
-                                        icon: Image(image: AssetImage('assets/icons/ic_map_selected.png'),),
-                                        onPressed: (){
-                                          setState(() {
-                                            label = 'My address is';
-                                            _content = '${widget.profile.location.street.number} ${widget.profile.location.street.name},${widget.profile.location.city},${widget.profile.location.state}';
-                                            //setupContent(result, 2);
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: <Widget>[
-                                      //_buildTopIndicator(false),
-                                      IconButton(
-                                        icon: Image(image: AssetImage('assets/icons/ic_phone_default.png'),),
-                                        onPressed: (){
-                                          setState(() {
-                                            label = 'My phone is';
-                                            _content = '${widget.profile.phone}';
-                                            //setupContent(result, 3);
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: <Widget>[
-                                      //_buildTopIndicator(false),
-                                      IconButton(
-                                        icon: Image(image: AssetImage('assets/icons/ic_privacy_default.png'),),
-                                        onPressed: (){
-                                          setState(() {
-                                            label = 'My password is';
-                                            _content = '${widget.profile.login.password}';
-                                            //setupContent(result, 4);
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),*/
+          )
+        ],
+      ),
     );
   }
 

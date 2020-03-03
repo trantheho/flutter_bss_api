@@ -132,37 +132,29 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body:new CardStackUser(
-        matchEngine: matchEngine,
-      ),
-      /*StreamBuilder(
+      body: StreamBuilder(
         stream: bloc.subject.stream,
         // ignore: missing_return
         builder: (context, AsyncSnapshot<List<User>> snapshot){
           if(snapshot.hasData){
-            for(int i=0; i<snapshot.data.length; i++){
-              var user = snapshot.data[i];
-              list.add(user);
-
-              print("User value: ${user.toString()}");
-            }
-
-
-            matchEngine = new MatchEngine(
+            /*matchEngine = new MatchEngine(
                 matches: user_data.map((User user) {
                   return Match(user: user);
-                }).toList());
+                }).toList());*/
 
             // ignore: missing_return
             return new CardStack(
-              matchEngine: matchEngine,
+              matchEngine: new MatchEngine(
+                  matches: snapshot.data.map((User user) {
+                    return Match(user: user);
+                  }).toList())
             );
           }
           else{
             return _buildLoading();
           }
         },
-      ),*/
+      ),
       bottomNavigationBar: _buildBottomBar(),
     );
   }
@@ -178,6 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 children: <Widget>[
                   Text('Please wait to loading data...'),
+                  SizedBox(height: 50,),
                   CircularProgressIndicator(),
                 ],
               )
