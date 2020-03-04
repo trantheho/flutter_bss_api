@@ -8,15 +8,16 @@ import 'package:flutter_bss_api/pages/favorite_page.dart';
 import 'package:flutter_bss_api/pages/user_screen.dart';
 import 'package:flutter_bss_api/utils/cards_demo.dart';
 import 'package:flutter_bss_api/utils/matches.dart';
+import 'package:flutter_bss_api/utils/top_indicator.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-/*final MatchEngine matchEngine = new MatchEngine(
+final MatchEngine matchEngine = new MatchEngine(
     matches: user_data.map((User user) {
       return Match(user: user);
-    }).toList());*/
+    }).toList());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -44,13 +45,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Match match = new Match();
-  MatchEngine matchEngine;
+  //MatchEngine matchEngine;
   List<User> list;
 
 
   @override
   void initState () {
-    bloc.updateUser();
+    //bloc.updateUser();
     list = [];
     overlayBloc.inputValue.add(true);
   }
@@ -132,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: StreamBuilder(
+      /*body: StreamBuilder(
         stream: bloc.subject.stream,
         builder: (context, AsyncSnapshot<List<User>> snapshot){
           if(snapshot.hasData){
@@ -151,6 +152,9 @@ class _MyHomePageState extends State<MyHomePage> {
             return _buildLoading();
           }
         },
+      ),*/
+      body: CardStackUser(
+        matchEngine: matchEngine,
       ),
       bottomNavigationBar: _buildBottomBar(),
     );

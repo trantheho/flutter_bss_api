@@ -528,6 +528,31 @@ class _ProfileCardState extends State<ProfileCard> {
                 Column(
                   children: <Widget>[
                     Container(
+                      width: 200,
+                      height: 20,
+                      child: Center(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            Stack(
+                              alignment: Alignment.center,
+                              children: <Widget>[
+                                Container(
+                                    margin: EdgeInsets.only(bottom: 2),
+                                    child: Image(image: AssetImage('assets/icons/ic_up_arrow.png'), width: 10, height: 10,)),
+                                Container(
+                                  width: 30,
+                                  height: 2,
+                                  color: Colors.green[700],
+                                ),
+                              ],
+                            ),
+
+                          ],
+                        ),
+                      ),
+                    ),
+                    Container(
                       margin: EdgeInsets.only(bottom: 8),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -535,7 +560,7 @@ class _ProfileCardState extends State<ProfileCard> {
                         children: <Widget>[
                           Column(
                             children: <Widget>[
-                              _buildTopIndicator(name),
+                              //_buildTopIndicator(name),
                               IconButton(
                                 icon: Image(image: AssetImage(nameImage),),
                                 onPressed:() {
@@ -552,7 +577,7 @@ class _ProfileCardState extends State<ProfileCard> {
                           ),
                           Column(
                             children: <Widget>[
-                              _buildTopIndicator(schedule),
+                              //_buildTopIndicator(schedule),
                               IconButton(
                                 icon: Image(image: AssetImage(scheduleImage),),
                                 onPressed: () {
@@ -568,7 +593,7 @@ class _ProfileCardState extends State<ProfileCard> {
                           ),
                           Column(
                             children: <Widget>[
-                              _buildTopIndicator(address),
+                              //_buildTopIndicator(address),
                               IconButton(
                                 icon: Image(image: AssetImage(addressImage),),
                                 onPressed: (){
@@ -584,7 +609,7 @@ class _ProfileCardState extends State<ProfileCard> {
                           ),
                           Column(
                             children: <Widget>[
-                              _buildTopIndicator(phone),
+                              //_buildTopIndicator(phone),
                               IconButton(
                                 icon: Image(image: AssetImage(phoneImage),),
                                 onPressed: (){
@@ -600,7 +625,7 @@ class _ProfileCardState extends State<ProfileCard> {
                           ),
                           Column(
                             children: <Widget>[
-                              _buildTopIndicator(password),
+                              //_buildTopIndicator(password),
                               IconButton(
                                 icon: Image(image: AssetImage(passwordImage),),
                                 onPressed: (){
