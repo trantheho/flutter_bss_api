@@ -9,36 +9,23 @@ class UserBloc {
   final BehaviorSubject<List<User>> _subject = BehaviorSubject<List<User>> ();
   List<User> list = List();
 
-  /**
-   *StreamController là StreamSink để quản lí luồng như Rxdart.
-   * Bản demo sài RxDart
-   *
-   * Trong RxDart gồm: BehaviorSubject, ReplaySubject, PublishSubject
-   * BehaviorSubject: nhận giá trị respone
-   */
-  //final BehaviorSubject<UserResponse> _subject = BehaviorSubject<UserResponse> ();
+ //local user bloc
   final ReplaySubject<List<User>> _userSubject = ReplaySubject<List<User>> ();
   final DatabaseHelper db = DatabaseHelper();
 
-  getUser() async{
-    for(int i= 1 ; i<3; i++){
-      UserResponse response = await _userApiProvider.getUser();
-      list.add(response.results[0]);
-    }
-    return list;
-  }
-
   updateUser() async{
     if(list.isEmpty){
-      list = getUser();
+      for(int i =0; i < 2; i++){
+        UserResponse response = await _userApiProvider.getUser();
+        list.add(response.results[0]);
+      }
     }
     else{
       list.removeAt(0);
       UserResponse response = await _userApiProvider.getUser();
       list.add(response.results[0]);
+      print("List user update: ${list.first.name.first}");
     }
-
-    print("List user: $list");
     _subject.sink.add(list);
   }
 

@@ -21,9 +21,9 @@ class MatchEngine extends ChangeNotifier {
   void cycleMatch() {
     if (currentMatch.decision != Decision.indecided) {
       currentMatch.reset();
-      _currentMatchIndex = _nextMatchIndex;
-      _nextMatchIndex =
-          _nextMatchIndex < _matches.length - 1 ? _nextMatchIndex + 1 : 0;
+      _currentMatchIndex =  _nextMatchIndex;
+      _nextMatchIndex = 1;
+      //_nextMatchIndex < _matches.length - 1 ? _nextMatchIndex + 1 : 0;
       notifyListeners();
     }
   }
@@ -41,7 +41,7 @@ class Match extends ChangeNotifier {
       decision = Decision.like;
       notifyListeners();
     }
-    db.saveUser(user);
+    //db.saveUser(user);
   }
 
   void nope() {

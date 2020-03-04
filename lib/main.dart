@@ -13,10 +13,10 @@ void main() {
   runApp(MyApp());
 }
 
-final MatchEngine matchEngine = new MatchEngine(
+/*final MatchEngine matchEngine = new MatchEngine(
     matches: user_data.map((User user) {
       return Match(user: user);
-    }).toList());
+    }).toList());*/
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -44,13 +44,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Match match = new Match();
-  //MatchEngine matchEngine;
+  MatchEngine matchEngine;
   List<User> list;
 
 
   @override
   void initState () {
-    bloc.getUser();
+    bloc.updateUser();
     list = [];
     overlayBloc.inputValue.add(true);
   }
@@ -134,20 +134,17 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: _buildAppBar(),
       body: StreamBuilder(
         stream: bloc.subject.stream,
-        // ignore: missing_return
         builder: (context, AsyncSnapshot<List<User>> snapshot){
           if(snapshot.hasData){
-            /*matchEngine = new MatchEngine(
-                matches: user_data.map((User user) {
+            matchEngine = new MatchEngine(
+                matches: snapshot.data.map((User user) {
                   return Match(user: user);
-                }).toList());*/
+                }).toList());
 
-            // ignore: missing_return
-            return new CardStack(
-              matchEngine: new MatchEngine(
-                  matches: snapshot.data.map((User user) {
-                    return Match(user: user);
-                  }).toList())
+            print("data from bloc: ${snapshot.data}");
+
+            return CardStackUser(
+              matchEngine: matchEngine,
             );
           }
           else{

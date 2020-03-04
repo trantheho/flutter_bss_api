@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bss_api/bloc/overlay_bloc.dart';
@@ -88,7 +89,7 @@ class _CardStackUserState extends State<CardStackUser> {
       transform: Matrix4.identity()..scale(_nextCardScale, _nextCardScale),
       alignment: Alignment.center,
       child: ProfileCard(
-        user: widget.matchEngine.nextMatch.user,
+        profile: widget.matchEngine.nextMatch.user,
       ),
     );
   }
@@ -96,7 +97,7 @@ class _CardStackUserState extends State<CardStackUser> {
   Widget _buildFrontCard() {
     return ProfileCard(
       key: _frontCard,
-      user: widget.matchEngine.currentMatch.user,
+      profile: widget.matchEngine.currentMatch.user,
     );
   }
 
@@ -131,13 +132,13 @@ class _CardStackUserState extends State<CardStackUser> {
         setState(() {
           print("save user into local database");
           db.saveUser(currentMatch.user);
-          bloc.updateUser();
         });
         break;
       case SlideDirection.right:
         currentMatch.nope();
         setState(() {
           bloc.updateUser();
+          _onMatchEngineChange();
         });
         break;
       case SlideDirection.up:
@@ -146,6 +147,7 @@ class _CardStackUserState extends State<CardStackUser> {
     }
 
     widget.matchEngine.cycleMatch();
+
   }
 
   @override
@@ -323,7 +325,6 @@ class _DraggableCardState extends State<DraggableCard> with TickerProviderStateM
       begin: const Offset(0.0, 0.0),
       end: Offset(2 * widget.screenWidth, 0.0),
     );
-
     slideOutAnimation.forward(from: 0.0);
   }
 
@@ -340,7 +341,6 @@ class _DraggableCardState extends State<DraggableCard> with TickerProviderStateM
 
   void _onPanStart(DragStartDetails details) {
     dragStart = details.globalPosition;
-
 
     if (slideBackAnimation.isAnimating) {
       slideBackAnimation.stop(canceled: true);
@@ -445,9 +445,9 @@ class _DraggableCardState extends State<DraggableCard> with TickerProviderStateM
 }
 
 class ProfileCard extends StatefulWidget {
-  final User user;
+  final User profile;
 
-  ProfileCard({Key key, this.user}) : super(key: key);
+  ProfileCard({Key key, this.profile}) : super(key: key);
 
   @override
   _ProfileCardState createState() => _ProfileCardState();
@@ -456,16 +456,24 @@ class ProfileCard extends StatefulWidget {
 class _ProfileCardState extends State<ProfileCard> {
 
   String _content, label;
-  bool first = true;
+  bool first = true, name, schedule, address, phone, password;
+  String nameImage, scheduleImage, addressImage, phoneImage, passwordImage;
+
 
 
   @override
   void initState() {
+    initImage();
+    name = false;
+    schedule = false;
+    address = true;
+    phone = false;
+    password = false;
     label = "My address is";
   }
 
   Widget _buildProfile(){
-    return Padding(
+    return new Padding(
       padding: const EdgeInsets.all(4),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -493,8 +501,8 @@ class _ProfileCardState extends State<ProfileCard> {
                             shape: BoxShape.circle,
                             color: Colors.white,
                             image: DecorationImage(
-                              fit: BoxFit.cover,
-                              image: NetworkImage(widget.user.picture.large),
+                                fit: BoxFit.cover,
+                                image: NetworkImage(widget.profile.picture.large)
                             )
                         ),
                       ),
@@ -511,7 +519,7 @@ class _ProfileCardState extends State<ProfileCard> {
                   child: Container(
                     padding: EdgeInsets.all(8),
                     child: Text(
-                      checkFirst(first, widget.user),
+                      checkFirst(first, widget.profile),
                       style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
@@ -519,7 +527,6 @@ class _ProfileCardState extends State<ProfileCard> {
                 ),
                 Column(
                   children: <Widget>[
-                    _buildTopIndicator(),
                     Container(
                       margin: EdgeInsets.only(bottom: 8),
                       child: Row(
@@ -528,16 +535,16 @@ class _ProfileCardState extends State<ProfileCard> {
                         children: <Widget>[
                           Column(
                             children: <Widget>[
-                              //_buildTopIndicator(false),
+                              _buildTopIndicator(name),
                               IconButton(
-                                icon: Image(image: AssetImage('assets/icons/ic_user_default.png'),),
+                                icon: Image(image: AssetImage(nameImage),),
                                 onPressed:() {
                                   setState(() {
+                                    changeColorIcon(0);
                                     label = 'My name is';
-                                    _content = '${widget.user.name.title}.${widget.user.name.first} ${widget.user.name.last}';
+                                    _content = '${widget.profile.name.title}.${widget.profile.name.first} ${widget.profile.name.last}';
                                     first = false;
-                                    checkFirst(first, widget.user);
-                                    //_content = setupContent(result, 0);
+                                    checkFirst(first, widget.profile);
                                   });
                                 },
                               ),
@@ -545,14 +552,15 @@ class _ProfileCardState extends State<ProfileCard> {
                           ),
                           Column(
                             children: <Widget>[
-                              //_buildTopIndicator(false),
+                              _buildTopIndicator(schedule),
                               IconButton(
-                                icon: Image(image: AssetImage('assets/icons/ic_schedule_default.png'),),
+                                icon: Image(image: AssetImage(scheduleImage),),
                                 onPressed: () {
                                   setState(() {
+                                    changeColorIcon(1);
+                                    first = false;
                                     label = 'My schedule is';
-                                    _content = '${widget.user.location.street.number} ${widget.user.location.street.name},${widget.user.location.city},${widget.user.location.state}';
-                                    //setupContent(result, 1);
+                                    _content = '${widget.profile.location.street.number} ${widget.profile.location.street.name},${widget.profile.location.city},${widget.profile.location.state}';
                                   });
                                 },
                               ),
@@ -560,14 +568,15 @@ class _ProfileCardState extends State<ProfileCard> {
                           ),
                           Column(
                             children: <Widget>[
-                              //_buildTopIndicator(true),
+                              _buildTopIndicator(address),
                               IconButton(
-                                icon: Image(image: AssetImage('assets/icons/ic_map_selected.png'),),
+                                icon: Image(image: AssetImage(addressImage),),
                                 onPressed: (){
                                   setState(() {
+                                    changeColorIcon(2);
+                                    first = false;
                                     label = 'My address is';
-                                    _content = '${widget.user.location.street.number} ${widget.user.location.street.name},${widget.user.location.city},${widget.user.location.state}';
-                                    //setupContent(result, 2);
+                                    _content = '${widget.profile.location.street.number} ${widget.profile.location.street.name},${widget.profile.location.city},${widget.profile.location.state}';
                                   });
                                 },
                               ),
@@ -575,14 +584,15 @@ class _ProfileCardState extends State<ProfileCard> {
                           ),
                           Column(
                             children: <Widget>[
-                              //_buildTopIndicator(false),
+                              _buildTopIndicator(phone),
                               IconButton(
-                                icon: Image(image: AssetImage('assets/icons/ic_phone_default.png'),),
+                                icon: Image(image: AssetImage(phoneImage),),
                                 onPressed: (){
                                   setState(() {
+                                    changeColorIcon(3);
+                                    first = false;
                                     label = 'My phone is';
-                                    _content = '${widget.user.phone}';
-                                    //setupContent(result, 3);
+                                    _content = '${widget.profile.phone}';
                                   });
                                 },
                               ),
@@ -590,14 +600,15 @@ class _ProfileCardState extends State<ProfileCard> {
                           ),
                           Column(
                             children: <Widget>[
-                              //_buildTopIndicator(false),
+                              _buildTopIndicator(password),
                               IconButton(
-                                icon: Image(image: AssetImage('assets/icons/ic_privacy_default.png'),),
+                                icon: Image(image: AssetImage(passwordImage),),
                                 onPressed: (){
                                   setState(() {
+                                    changeColorIcon(4);
+                                    first = false;
                                     label = 'My password is';
-                                    _content = '${widget.user.login.password}';
-                                    //setupContent(result, 4);
+                                    _content = '${widget.profile.login.password}';
                                   });
                                 },
                               ),
@@ -608,25 +619,46 @@ class _ProfileCardState extends State<ProfileCard> {
                     ),
                   ],
                 )
-
               ],
             ),
           )
         ],
       ),
     );
+
   }
 
-  Widget _buildTopIndicator(){
-    /*if(value){*/
-    return Container(
-      width: 200,
-      child: Center(
+  Widget _buildTopIndicator(bool state){
+    if(state){
+      return Center(
         child: Stack(
           alignment: Alignment.center,
           children: <Widget>[
-            AnimatedPositioned(
-              duration: Duration(milliseconds: 300),
+            Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                Container(
+                    margin: EdgeInsets.only(bottom: 2),
+                    child: Image(image: AssetImage('assets/icons/ic_up_arrow.png'), width: 10, height: 10,)),
+                Container(
+                  width: 30,
+                  height: 2,
+                  color: Colors.green[700],
+                ),
+              ],
+            ),
+
+          ],
+        ),
+      );
+    }
+    else{
+      return Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            Opacity(
+              opacity: 0,
               child: Stack(
                 alignment: Alignment.center,
                 children: <Widget>[
@@ -644,29 +676,8 @@ class _ProfileCardState extends State<ProfileCard> {
 
           ],
         ),
-      ),
-    );
-    //}
-    /*else{
-      return Container(
-        child: Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            Container(
-              height: 10,
-                margin: EdgeInsets.only(bottom: 2),
-                *//*child: Image(image: AssetImage('assets/icons/ic_up_arrow.png'), width: 10, height: 10,)*//*
-            ),
-            Container(
-              width: 30,
-              height: 2,
-              color: Colors.white,
-            ),
-          ],
-        ),
       );
-    }*/
-
+    }
   }
 
   Widget _buildProfileCard(){
@@ -707,9 +718,9 @@ class _ProfileCardState extends State<ProfileCard> {
     );
   }
 
-  String checkFirst(bool value, User result){
+  String checkFirst(bool value, User profile){
     if(value){
-      return '${result.location.street},${result.location.city},${result.location.state}';
+      return '${profile.location.street},${profile.location.city},${profile.location.state}';
     }
     else{
       return _content;
@@ -720,10 +731,80 @@ class _ProfileCardState extends State<ProfileCard> {
 
     switch(position){
       case 0:
+        name = true;
+        schedule = false;
+        address = false;
+        phone = false;
+        password = false;
 
+        nameImage = 'assets/icons/ic_user_selected.png';
+        scheduleImage = 'assets/icons/ic_schedule_default.png';
+        addressImage = 'assets/icons/ic_map_default.png';
+        phoneImage = 'assets/icons/ic_phone_default.png';
+        passwordImage = 'assets/icons/ic_privacy_default.png';
+        break;
+      case 1:
+        name = false;
+        schedule = true;
+        address = false;
+        phone = false;
+        password = false;
+
+        nameImage = 'assets/icons/ic_user_default.png';
+        scheduleImage = 'assets/icons/ic_schedule_selected.png';
+        addressImage = 'assets/icons/ic_map_default.png';
+        phoneImage = 'assets/icons/ic_phone_default.png';
+        passwordImage = 'assets/icons/ic_privacy_default.png';
+        break;
+      case 2:
+        name = false;
+        schedule = false;
+        address = true;
+        phone = false;
+        password = false;
+
+        nameImage = 'assets/icons/ic_user_default.png';
+        scheduleImage = 'assets/icons/ic_schedule_default.png';
+        addressImage = 'assets/icons/ic_map_selected.png';
+        phoneImage = 'assets/icons/ic_phone_default.png';
+        passwordImage = 'assets/icons/ic_privacy_default.png';
+        break;
+      case 3:
+        name = false;
+        schedule = false;
+        address = false;
+        phone = true;
+        password = false;
+
+        nameImage = 'assets/icons/ic_user_default.png';
+        scheduleImage = 'assets/icons/ic_schedule_default.png';
+        addressImage = 'assets/icons/ic_map_default.png';
+        phoneImage = 'assets/icons/ic_phone_selected.png';
+        passwordImage = 'assets/icons/ic_privacy_default.png';
+        break;
+      case 4:
+        name = false;
+        schedule = false;
+        address = false;
+        phone = false;
+        password = true;
+
+        nameImage = 'assets/icons/ic_user_default.png';
+        scheduleImage = 'assets/icons/ic_schedule_default.png';
+        addressImage = 'assets/icons/ic_map_default.png';
+        phoneImage = 'assets/icons/ic_phone_default.png';
+        passwordImage = 'assets/icons/ic_privacy_selected.png';
+        break;
     }
   }
 
+  void initImage(){
+    nameImage = 'assets/icons/ic_user_default.png';
+    scheduleImage = 'assets/icons/ic_schedule_default.png';
+    addressImage = 'assets/icons/ic_map_selected.png';
+    phoneImage = 'assets/icons/ic_phone_default.png';
+    passwordImage = 'assets/icons/ic_privacy_default.png';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -745,7 +826,7 @@ class _ProfileCardState extends State<ProfileCard> {
             children: <Widget>[
               //_buildBackground(),
               _buildProfileCard(),
-              //_buildProfile(),
+              _buildProfile(),
             ],
           ),
         ),
