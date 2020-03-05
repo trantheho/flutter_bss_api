@@ -456,20 +456,19 @@ class ProfileCard extends StatefulWidget {
 class _ProfileCardState extends State<ProfileCard> {
 
   String _content, label;
-  bool first = true, name, schedule, address, phone, password;
+  bool first = true;
   String nameImage, scheduleImage, addressImage, phoneImage, passwordImage;
+  double midle, iconSize, indicatorWidth;
 
 
 
   @override
   void initState() {
     initImage();
-    name = false;
-    schedule = false;
-    address = true;
-    phone = false;
-    password = false;
     label = "My address is";
+    iconSize = 48;
+    indicatorWidth = 30;
+    midle = 240/2 - 15;
   }
 
   Widget _buildProfile(){
@@ -528,28 +527,15 @@ class _ProfileCardState extends State<ProfileCard> {
                 Column(
                   children: <Widget>[
                     Container(
-                      width: 200,
-                      height: 20,
-                      child: Center(
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: <Widget>[
-                            Stack(
-                              alignment: Alignment.center,
-                              children: <Widget>[
-                                Container(
-                                    margin: EdgeInsets.only(bottom: 2),
-                                    child: Image(image: AssetImage('assets/icons/ic_up_arrow.png'), width: 10, height: 10,)),
-                                Container(
-                                  width: 30,
-                                  height: 2,
-                                  color: Colors.green[700],
-                                ),
-                              ],
-                            ),
-
-                          ],
-                        ),
+                      width: 240,
+                      height: 10,
+                      child: Stack(
+                        children: <Widget> [
+                          AnimatedPositioned(
+                              duration: Duration(milliseconds:150 ),
+                              left: midle,
+                              child: _buildTopIndicator(true)),
+                        ]
                       ),
                     ),
                     Container(
@@ -566,6 +552,7 @@ class _ProfileCardState extends State<ProfileCard> {
                                 onPressed:() {
                                   setState(() {
                                     changeColorIcon(0);
+                                    midle = getPosition(0);
                                     label = 'My name is';
                                     _content = '${widget.profile.name.title}.${widget.profile.name.first} ${widget.profile.name.last}';
                                     first = false;
@@ -582,6 +569,7 @@ class _ProfileCardState extends State<ProfileCard> {
                                 icon: Image(image: AssetImage(scheduleImage),),
                                 onPressed: () {
                                   setState(() {
+                                    midle = getPosition(1);
                                     changeColorIcon(1);
                                     first = false;
                                     label = 'My schedule is';
@@ -598,6 +586,7 @@ class _ProfileCardState extends State<ProfileCard> {
                                 icon: Image(image: AssetImage(addressImage),),
                                 onPressed: (){
                                   setState(() {
+                                    midle = getPosition(2);
                                     changeColorIcon(2);
                                     first = false;
                                     label = 'My address is';
@@ -614,6 +603,7 @@ class _ProfileCardState extends State<ProfileCard> {
                                 icon: Image(image: AssetImage(phoneImage),),
                                 onPressed: (){
                                   setState(() {
+                                    midle = getPosition(3);
                                     changeColorIcon(3);
                                     first = false;
                                     label = 'My phone is';
@@ -627,9 +617,10 @@ class _ProfileCardState extends State<ProfileCard> {
                             children: <Widget>[
                               //_buildTopIndicator(password),
                               IconButton(
-                                icon: Image(image: AssetImage(passwordImage),),
+                                icon: Image(image: AssetImage(passwordImage),width: 50, height: 50,),
                                 onPressed: (){
                                   setState(() {
+                                    midle = getPosition(4);
                                     changeColorIcon(4);
                                     first = false;
                                     label = 'My password is';
@@ -756,11 +747,6 @@ class _ProfileCardState extends State<ProfileCard> {
 
     switch(position){
       case 0:
-        name = true;
-        schedule = false;
-        address = false;
-        phone = false;
-        password = false;
 
         nameImage = 'assets/icons/ic_user_selected.png';
         scheduleImage = 'assets/icons/ic_schedule_default.png';
@@ -769,11 +755,6 @@ class _ProfileCardState extends State<ProfileCard> {
         passwordImage = 'assets/icons/ic_privacy_default.png';
         break;
       case 1:
-        name = false;
-        schedule = true;
-        address = false;
-        phone = false;
-        password = false;
 
         nameImage = 'assets/icons/ic_user_default.png';
         scheduleImage = 'assets/icons/ic_schedule_selected.png';
@@ -782,11 +763,6 @@ class _ProfileCardState extends State<ProfileCard> {
         passwordImage = 'assets/icons/ic_privacy_default.png';
         break;
       case 2:
-        name = false;
-        schedule = false;
-        address = true;
-        phone = false;
-        password = false;
 
         nameImage = 'assets/icons/ic_user_default.png';
         scheduleImage = 'assets/icons/ic_schedule_default.png';
@@ -795,11 +771,6 @@ class _ProfileCardState extends State<ProfileCard> {
         passwordImage = 'assets/icons/ic_privacy_default.png';
         break;
       case 3:
-        name = false;
-        schedule = false;
-        address = false;
-        phone = true;
-        password = false;
 
         nameImage = 'assets/icons/ic_user_default.png';
         scheduleImage = 'assets/icons/ic_schedule_default.png';
@@ -808,11 +779,6 @@ class _ProfileCardState extends State<ProfileCard> {
         passwordImage = 'assets/icons/ic_privacy_default.png';
         break;
       case 4:
-        name = false;
-        schedule = false;
-        address = false;
-        phone = false;
-        password = true;
 
         nameImage = 'assets/icons/ic_user_default.png';
         scheduleImage = 'assets/icons/ic_schedule_default.png';
@@ -829,6 +795,11 @@ class _ProfileCardState extends State<ProfileCard> {
     addressImage = 'assets/icons/ic_map_selected.png';
     phoneImage = 'assets/icons/ic_phone_default.png';
     passwordImage = 'assets/icons/ic_privacy_default.png';
+  }
+
+  getPosition(int index){
+    double left = ((iconSize - indicatorWidth) / 2) + (index * iconSize);
+    return left;
   }
 
   @override

@@ -17,7 +17,23 @@ class UserItem extends StatefulWidget {
 class _UserItemState extends State<UserItem> {
   String _content, label = 'My name is';
   bool first = true;
+  String nameImage, scheduleImage, addressImage, phoneImage, passwordImage;
+  double midle, iconSize, indicatorWidth;
 
+  @override
+  void initState() {
+    super.initState();
+    initImage();
+   /* name = false;
+    schedule = false;
+    address = true;
+    phone = false;
+    password = false;*/
+    label = "My address is";
+    iconSize = 48;
+    indicatorWidth = 30;
+    midle = 240/2 - 15;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +91,18 @@ class _UserItemState extends State<UserItem> {
                   ),
                   Column(
                     children: <Widget>[
-                      _buildTopIndicator(),
+                      Container(
+                        width: 240,
+                        height: 10,
+                        child: Stack(
+                            children: <Widget> [
+                              AnimatedPositioned(
+                                  duration: Duration(milliseconds:150 ),
+                                  left: midle,
+                                  child: _buildTopIndicator()),
+                            ]
+                        ),
+                      ),
                       Container(
                         margin: EdgeInsets.only(bottom: 8),
                         child: Row(
@@ -86,9 +113,11 @@ class _UserItemState extends State<UserItem> {
                               children: <Widget>[
                                 //_buildTopIndicator(false),
                                 IconButton(
-                                  icon: Image(image: AssetImage('assets/icons/ic_user_default.png'),),
+                                  icon: Image(image: AssetImage(nameImage),),
                                   onPressed:() {
                                     setState(() {
+                                      changeColorIcon(0);
+                                      midle = getPosition(0);
                                       label = 'My name is';
                                       _content = '${widget.user.name.title}.${widget.user.name.first} ${widget.user.name.last}';
                                       first = false;
@@ -103,9 +132,11 @@ class _UserItemState extends State<UserItem> {
                               children: <Widget>[
                                 //_buildTopIndicator(false),
                                 IconButton(
-                                  icon: Image(image: AssetImage('assets/icons/ic_schedule_default.png'),),
+                                  icon: Image(image: AssetImage(scheduleImage),),
                                   onPressed: () {
                                     setState(() {
+                                      changeColorIcon(1);
+                                      midle = getPosition(1);
                                       label = 'My schedule is';
                                       _content = '${widget.user.location.street.number} ${widget.user.location.street.name},${widget.user.location.city},${widget.user.location.state}';
                                       //setupContent(result, 1);
@@ -118,9 +149,11 @@ class _UserItemState extends State<UserItem> {
                               children: <Widget>[
                                 //_buildTopIndicator(true),
                                 IconButton(
-                                  icon: Image(image: AssetImage('assets/icons/ic_map_selected.png'),),
+                                  icon: Image(image: AssetImage(addressImage),),
                                   onPressed: (){
                                     setState(() {
+                                      changeColorIcon(2);
+                                      midle = getPosition(2);
                                       label = 'My address is';
                                       _content = '${widget.user.location.street.name},${widget.user.location.city},${widget.user.location.state}';
                                       //setupContent(result, 2);
@@ -133,9 +166,11 @@ class _UserItemState extends State<UserItem> {
                               children: <Widget>[
                                 //_buildTopIndicator(false),
                                 IconButton(
-                                  icon: Image(image: AssetImage('assets/icons/ic_phone_default.png'),),
+                                  icon: Image(image: AssetImage(phoneImage),),
                                   onPressed: (){
                                     setState(() {
+                                      changeColorIcon(3);
+                                      midle = getPosition(3);
                                       label = 'My phone is';
                                       _content = '${widget.user.phone}';
                                       //setupContent(result, 3);
@@ -148,9 +183,11 @@ class _UserItemState extends State<UserItem> {
                               children: <Widget>[
                                 //_buildTopIndicator(false),
                                 IconButton(
-                                  icon: Image(image: AssetImage('assets/icons/ic_privacy_default.png'),),
+                                  icon: Image(image: AssetImage(passwordImage),),
                                   onPressed: (){
                                     setState(() {
+                                      changeColorIcon(4);
+                                      midle = getPosition(4);
                                       label = 'My password is';
                                       _content = '${widget.user.login.password}';
                                       //setupContent(result, 4);
@@ -196,16 +233,100 @@ class _UserItemState extends State<UserItem> {
   Uint8List loadImage(String path){
     File file = File(path);
     Uint8List byte = file.readAsBytesSync();
-    print("path image: $path");
+    //print("path image: $path");
     return byte;
   }
 
-  String checkFirst(bool value, User result){
+  String checkFirst(bool value, User profile){
     if(value){
-      return '${result.location.street.name},${result.location.city},${result.location.state}';
+      return '${profile.location.street},${profile.location.city},${profile.location.state}';
     }
     else{
       return _content;
     }
+  }
+
+  void changeColorIcon(int position){
+
+    switch(position){
+      case 0:
+       /* name = true;
+        schedule = false;
+        address = false;
+        phone = false;
+        password = false;*/
+
+        nameImage = 'assets/icons/ic_user_selected.png';
+        scheduleImage = 'assets/icons/ic_schedule_default.png';
+        addressImage = 'assets/icons/ic_map_default.png';
+        phoneImage = 'assets/icons/ic_phone_default.png';
+        passwordImage = 'assets/icons/ic_privacy_default.png';
+        break;
+      case 1:
+        /*name = false;
+        schedule = true;
+        address = false;
+        phone = false;
+        password = false;*/
+
+        nameImage = 'assets/icons/ic_user_default.png';
+        scheduleImage = 'assets/icons/ic_schedule_selected.png';
+        addressImage = 'assets/icons/ic_map_default.png';
+        phoneImage = 'assets/icons/ic_phone_default.png';
+        passwordImage = 'assets/icons/ic_privacy_default.png';
+        break;
+      case 2:
+       /* name = false;
+        schedule = false;
+        address = true;
+        phone = false;
+        password = false;*/
+
+        nameImage = 'assets/icons/ic_user_default.png';
+        scheduleImage = 'assets/icons/ic_schedule_default.png';
+        addressImage = 'assets/icons/ic_map_selected.png';
+        phoneImage = 'assets/icons/ic_phone_default.png';
+        passwordImage = 'assets/icons/ic_privacy_default.png';
+        break;
+      case 3:
+        /*name = false;
+        schedule = false;
+        address = false;
+        phone = true;
+        password = false;*/
+
+        nameImage = 'assets/icons/ic_user_default.png';
+        scheduleImage = 'assets/icons/ic_schedule_default.png';
+        addressImage = 'assets/icons/ic_map_default.png';
+        phoneImage = 'assets/icons/ic_phone_selected.png';
+        passwordImage = 'assets/icons/ic_privacy_default.png';
+        break;
+      case 4:
+        /*name = false;
+        schedule = false;
+        address = false;
+        phone = false;
+        password = true;*/
+
+        nameImage = 'assets/icons/ic_user_default.png';
+        scheduleImage = 'assets/icons/ic_schedule_default.png';
+        addressImage = 'assets/icons/ic_map_default.png';
+        phoneImage = 'assets/icons/ic_phone_default.png';
+        passwordImage = 'assets/icons/ic_privacy_selected.png';
+        break;
+    }
+  }
+
+  void initImage(){
+    nameImage = 'assets/icons/ic_user_default.png';
+    scheduleImage = 'assets/icons/ic_schedule_default.png';
+    addressImage = 'assets/icons/ic_map_selected.png';
+    phoneImage = 'assets/icons/ic_phone_default.png';
+    passwordImage = 'assets/icons/ic_privacy_default.png';
+  }
+
+  getPosition(int index){
+    double left = ((iconSize - indicatorWidth) / 2) + (index * iconSize);
+    return left;
   }
 }
