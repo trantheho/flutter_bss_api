@@ -1,3 +1,4 @@
+
 import 'package:flutter_bss_api/db/database.dart';
 import 'package:flutter_bss_api/models/user.dart';
 import 'package:flutter_bss_api/providers/user_api_provider.dart';
@@ -20,14 +21,20 @@ class UserBloc {
         list.add(response.results[0]);
       }
     }
+
     else{
-      list.removeAt(0);
-      UserResponse response = await _userApiProvider.getUser();
-      list.add(response.results[0]);
-      print("List user update: ${list.first.name.first}");
+      /*if(list.length > 2){
+        list.removeAt(0);
+      }*/
+      //else{
+        UserResponse response = await _userApiProvider.getUser();
+        list.add(response.results[0]);
+        list.removeAt(0);
+      //}
     }
     _subject.sink.add(list);
   }
+
 
   Future<UserResponse> initUser() async {
     UserResponse response = await _userApiProvider.getUser();

@@ -67,6 +67,7 @@ class _CardStackUserState extends State<CardStackUser> {
 
   _onMatchEngineChange() {
     setState(() {
+
       if (_currentMatch != null) {
         _currentMatch.removeListener(_onMatchChange);
       }
@@ -77,7 +78,10 @@ class _CardStackUserState extends State<CardStackUser> {
       }
 
       _frontCard = new Key(_currentMatch.user.gender);
+
     });
+
+    widget.matchEngine.cycleMatch();
   }
 
   _onMatchChange() {
@@ -132,6 +136,8 @@ class _CardStackUserState extends State<CardStackUser> {
         setState(() {
           print("save user into local database");
           db.saveUser(currentMatch.user);
+          bloc.updateUser();
+          _onMatchEngineChange();
         });
         break;
       case SlideDirection.right:
@@ -145,9 +151,6 @@ class _CardStackUserState extends State<CardStackUser> {
         currentMatch.superLike();
         break;
     }
-
-    widget.matchEngine.cycleMatch();
-
   }
 
   @override
@@ -341,7 +344,6 @@ class _DraggableCardState extends State<DraggableCard> with TickerProviderStateM
 
   void _onPanStart(DragStartDetails details) {
     dragStart = details.globalPosition;
-
     if (slideBackAnimation.isAnimating) {
       slideBackAnimation.stop(canceled: true);
     }

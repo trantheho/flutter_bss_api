@@ -19,13 +19,13 @@ class MatchEngine extends ChangeNotifier {
   Match get nextMatch => _matches[_nextMatchIndex];
 
   void cycleMatch() {
-    if (currentMatch.decision != Decision.indecided) {
-      currentMatch.reset();
-      _currentMatchIndex =  _nextMatchIndex;
-      _nextMatchIndex = 1;
-      //_nextMatchIndex < _matches.length - 1 ? _nextMatchIndex + 1 : 0;
-      notifyListeners();
-    }
+      if (currentMatch.decision != Decision.indecided) {
+        currentMatch.reset();
+        _currentMatchIndex = _nextMatchIndex;
+        _nextMatchIndex = 1;
+        //_nextMatchIndex < _matches.length - 1 ? _nextMatchIndex + 1 : 1;
+        notifyListeners();
+      }
   }
 }
 
@@ -41,7 +41,6 @@ class Match extends ChangeNotifier {
       decision = Decision.like;
       notifyListeners();
     }
-    //db.saveUser(user);
   }
 
   void nope() {
